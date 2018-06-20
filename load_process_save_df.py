@@ -50,12 +50,16 @@ for fname in f_list:
     inst.calc_word_count()
     inst.calc_sent_count()
     inst.calc_sent_len()
+    inst.calc_hook_first_five()
+    inst.calc_hook_frac()
     inst.calc_unique_words()
     inst.calc_word_length()
     inst.calc_sent_len_std()
     inst.calc_flesch_level()
     inst.calc_pos_counts()
     inst.calc_punc_ps()
+
+    
     #print(inst.adverb_count[0])
 
     feature_df = pd.DataFrame(
@@ -75,7 +79,9 @@ for fname in f_list:
          'flesch': inst.flesch_level,
          'said_ps': inst.said_ps,
          'and_ps': inst.and_ps,
-         'but_ps': inst.but_ps
+         'but_ps': inst.but_ps,
+         'flesch_five': inst.first_five,
+         'flesch_sec': inst.flesch_frac
          #'sent_compound': [vec[0] for vec in inst.sentiment_vec]
         })
 
