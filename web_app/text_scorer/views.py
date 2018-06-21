@@ -9,16 +9,26 @@ from flask import request
 from text_scorer.model_t import model_t
 from text_scorer.model_t import compare_to_mean
 from text_scorer.model_t import plot_feature_comp
+from text_scorer.pub_class import *
 import pickle
+
+id_to_pub = {0: 'The Atlantic',1:'Breitbart', 2:'Buzzfeed News', 4:'Fox News', 5:'The Guardian', 6:'National Review', 7:'The New York Times',
+            8:'Vox', 9:'The Washington Post'}
+
+pub_to_id = {'The Atlantic': 0,'Breitbart': 1, 'Buzzfeed News': 2, 'Fox News': 4, 'The Guardian': 5, 'National Review': 6, 'The New York Times': 7, 'Vox': 8, 'The Washington Post': 9}
+#['atl', 'breit', 'buzz', 'fox', 'guard', 'natrev', 'nyt', 'vox', 'wapo']
 
 @app.route('/input')
 def text_input():
-    return render_template("input.html")
+    pub_names = sorted(list(id_to_pub.values()))
+    return render_template("input.html", publications = pub_names)
 
 
 @app.route('/output')
 def text_output():
     #pull 'birth_month' from input field and store it
+    target_pub = request.args.get('publications')
+    print('target_pub:', target_pub)
     text = request.args.get('text')
     #print(text)
     destination_paper, text_features = model_t(text = text)
@@ -32,11 +42,11 @@ def text_output():
     print(mean_features)
     mean_features_comp = compare_to_mean(text_features, mean_features)
     print(mean_features_comp)
-    pub_dict = {0: 'New York Times',1:'Breitbart', 2:'Washington Post'}
+
 
     
     #for i in pub_dict:
-    plot_feature_comp(pub_dict, text_features, mean_features)
+    plot_feature_comp(id_to_pub, text_features, mean_features)
                                 
     #from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     #from matplotlib.figure import Figure
@@ -57,4 +67,4 @@ def text_output():
     figdata_png = base64.b64encode(figdata_png)
 
     
-    return render_template("output.html", the_result = destination_paper, img_data=urllib.parse.quote(figdata_png))#urllib.parse.quote(canvas))#urllib.parse.quote(png_output))
+    return render_template("output.html", the_result = destination_paper, the_target =  target_pub, img_data=urllib.parse.quote(figdata_png))#urllib.parse.quote(canvas))#urllib.parse.quote(png_output))

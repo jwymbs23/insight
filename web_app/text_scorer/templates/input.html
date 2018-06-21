@@ -55,7 +55,7 @@
     <br><br> -->
     <div class="container">
       <div class="starter-template">
-	<h2>Where should your article go?</h2>
+	<h2>Fit to print</h2>
 	<p>Enter your article text</p>
       </div>
       <div class = "container">
@@ -66,6 +66,14 @@
 	    <!--<input type="text" id="text" name='text' placeholder="e.g. "> -->
 	    <textarea type="text" id="text" name='text' style="font-size:12pt;height:250px;width:700px;"></textarea> 
 	  </div>
+	  Where do you want to submit your article?  <select name = publications method="GET" action="/output">
+	    {% for pub_name in publications %}
+	    <option value= "{{pub_name}}" SELECTED>{{pub_name}}</option>"
+	    {% endfor %}
+	  </select>
+
+
+	  
 	  <div>
 	    <button type="submit" class="btn btn-default btn-lg">Submit</button>
 	  </div>

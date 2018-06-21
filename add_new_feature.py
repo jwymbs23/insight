@@ -59,31 +59,52 @@ for fname in f_list:
 
 
     #history of features that have been added this way (DO NOT DELETE):
-#    inst.calc_word_count()
-#    inst.calc_sent_count()
-#    inst.calc_sent_len()
-#    inst.calc_punc_ps()
-
-
-
-    inst.calc_n_grams()
-    sorted_x = sorted(inst.gram_dict_pub_total.items(), key=operator.itemgetter(1))
-    print(sorted_x[::-1][:100])
-    print(len(sorted_x))
-    print(inst.gram_list[0][:10])
-    print(inst.gram_list[1][:10])
-    for ci, i in enumerate(inst.gram_list):
-        top_n = 3
-        if len(i) < top_n:
-            top_n = len(i)
-        for j in range(top_n):
-            #print(i[j][0])
-            if i[j][0] not in list(feature_df):
-                feature_df['ngram_'+i[j][0]] = [0 for k in range(len(feature_df))]
-                feature_df.loc[ci, 'ngram_'+i[j][0]] = i[j][1]
-    print(list(feature_df))
-    print(len(list(feature_df)))
-#    exit(0)
+    #inst.calc_word_count()
+    #inst.calc_sent_count()
+    #inst.calc_sent_len()
+    #inst.calc_punc_ps()
 #    feature_df['told_ps'] = inst.told_ps
+    #feature_df['i_ps'] = inst.i_ps
+
+
+    #inst.calc_sent_count()
+    #inst.calc_pos_counts()
+
+    #feature_df['total_pronoun'] = inst.pronoun_count
+    #feature_df['total_determiner'] = inst.determiner_count
+    #feature_df['total_preposition'] = inst.prep_count
+    #
+    #feature_df['pronoun_ps'] = feature_df['total_pronoun']/feature_df['sent_count']
+    #feature_df['determiner_ps'] = feature_df['total_determiner']/feature_df['sent_count']
+    #feature_df['preposition_ps'] = feature_df['total_preposition']/feature_df['sent_count']
+
+
+
+    inst.calc_word_rarity()
+    feature_df['word_rarity'] = inst.word_rarity
+
+    
+
+    #inst.calc_n_grams()
+    #sorted_x = sorted(inst.gram_dict_pub_total.items(), key=operator.itemgetter(1))
+    #print(sorted_x[::-1][:10])
+    ##print(len(sorted_x))
+    ##print(inst.gram_list[0][:10])
+    ##print(inst.gram_list[1][:10])
+    #for ci, i in enumerate(inst.gram_list):
+    #    top_n = 20
+    #    if len(i) < top_n:
+    #        top_n = len(i)
+    #    for j in range(top_n):
+    #        #print(i[j][0])
+    #        if i[j][0] not in list(feature_df):
+    #            feature_df['ngram_'+i[j][0]] = [0 for k in range(len(feature_df))]
+    #            feature_df.loc[ci, 'ngram_'+i[j][0]] = i[j][1]
+    ##print(list(feature_df))
+    #print(len(list(feature_df)))
+
+
+#    exit(0)
+
     
     pickle.dump(feature_df, open(pub_abbrev+'_data_df.p', 'wb'))

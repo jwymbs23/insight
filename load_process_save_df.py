@@ -81,7 +81,7 @@ for fname in f_list:
          'and_ps': inst.and_ps,
          'but_ps': inst.but_ps,
          'flesch_five': inst.first_five,
-         'flesch_sec': inst.flesch_frac
+         'flesch_sec': inst.flesch_frac 
          #'sent_compound': [vec[0] for vec in inst.sentiment_vec]
         })
 
