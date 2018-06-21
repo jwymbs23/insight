@@ -39,6 +39,8 @@ import glob
 
 from pub_class import *
 
+import operator
+
 
 f_list = glob.glob('*_tokenized_strings.p')
 
@@ -55,11 +57,33 @@ for fname in f_list:
     feature_df = pickle.load(open(pub_abbrev + '_data_df.p', 'rb'))
     #new_feature_name
 
-    inst.calc_word_count()
-    inst.calc_sent_count()
-    inst.calc_sent_len()
-    inst.calc_punc_ps()
-    
-    feature_df['told_ps'] = inst.told_ps
+
+    #history of features that have been added this way (DO NOT DELETE):
+#    inst.calc_word_count()
+#    inst.calc_sent_count()
+#    inst.calc_sent_len()
+#    inst.calc_punc_ps()
+
+
+
+    inst.calc_n_grams()
+    sorted_x = sorted(inst.gram_dict_pub_total.items(), key=operator.itemgetter(1))
+    print(sorted_x[::-1][:100])
+    print(len(sorted_x))
+    print(inst.gram_list[0][:10])
+    print(inst.gram_list[1][:10])
+    for ci, i in enumerate(inst.gram_list):
+        top_n = 3
+        if len(i) < top_n:
+            top_n = len(i)
+        for j in range(top_n):
+            #print(i[j][0])
+            if i[j][0] not in list(feature_df):
+                feature_df['ngram_'+i[j][0]] = [0 for k in range(len(feature_df))]
+                feature_df.loc[ci, 'ngram_'+i[j][0]] = i[j][1]
+    print(list(feature_df))
+    print(len(list(feature_df)))
+#    exit(0)
+#    feature_df['told_ps'] = inst.told_ps
     
     pickle.dump(feature_df, open(pub_abbrev+'_data_df.p', 'wb'))
