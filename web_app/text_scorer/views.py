@@ -9,13 +9,16 @@ from flask import request
 from text_scorer.model_t import model_t
 from text_scorer.model_t import compare_to_mean
 from text_scorer.model_t import plot_feature_comp
+from text_scorer.model_t import plot_target_comp
 from text_scorer.pub_class import *
 import pickle
+import base64
 
-id_to_pub = {0: 'The Atlantic',1:'Breitbart', 2:'Buzzfeed News', 4:'Fox News', 5:'The Guardian', 6:'National Review', 7:'The New York Times',
-            8:'Vox', 9:'The Washington Post'}
 
-pub_to_id = {'The Atlantic': 0,'Breitbart': 1, 'Buzzfeed News': 2, 'Fox News': 4, 'The Guardian': 5, 'National Review': 6, 'The New York Times': 7, 'Vox': 8, 'The Washington Post': 9}
+id_to_pub = {0: 'The Atlantic',1:'Breitbart', 2:'Buzzfeed News', 3:'Fox News', 4:'The Guardian', 5:'National Review', 6:'The New York Times',
+            7:'Vox', 8:'The Washington Post'}
+
+pub_to_id = {'The Atlantic': 0,'Breitbart': 1, 'Buzzfeed News': 2, 'Fox News': 3, 'The Guardian': 4, 'National Review': 5, 'The New York Times': 6, 'Vox': 7, 'The Washington Post': 8}
 #['atl', 'breit', 'buzz', 'fox', 'guard', 'natrev', 'nyt', 'vox', 'wapo']
 
 @app.route('/input')
@@ -46,7 +49,21 @@ def text_output():
 
     
     #for i in pub_dict:
-    plot_feature_comp(id_to_pub, text_features, mean_features)
+    plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub)
+
+
+    figfile_target = BytesIO()
+    plt.savefig(figfile_target, format='png')
+    figfile_target.seek(0)  # rewind to beginning of file
+    figdata_png_target = figfile_target.getvalue()
+
+
+    figdata_png_target = base64.b64encode(figdata_png_target)
+
+    
+
+    
+    plot_feature_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub)
                                 
     #from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     #from matplotlib.figure import Figure
@@ -63,8 +80,8 @@ def text_output():
     figfile.seek(0)  # rewind to beginning of file
     figdata_png = figfile.getvalue()
 
-    import base64
+
     figdata_png = base64.b64encode(figdata_png)
 
     
-    return render_template("output.html", the_result = destination_paper, the_target =  target_pub, img_data=urllib.parse.quote(figdata_png))#urllib.parse.quote(canvas))#urllib.parse.quote(png_output))
+    return render_template("output.html", the_result = destination_paper, the_target =  target_pub, img_data_target = urllib.parse.quote(figdata_png_target), img_data_total=urllib.parse.quote(figdata_png))#urllib.parse.quote(canvas))#urllib.parse.quote(png_output))

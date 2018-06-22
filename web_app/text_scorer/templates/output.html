@@ -54,20 +54,12 @@
 <div class="container">
 
   <div class="starter-template">
-
-
-    <p class="lead"><br>Your article is most similar in style to articles that have appeared in: <br> <b>{{the_result}}</b> </p>
-
-
-    <p class="lead"><br> To make it more like articles that have appeared in <b>{{the_target}}</b>, consider making the following changes: </p>
-    <p>blah blah blah </p>
-    
-
-    
-    <p class = "lead"><a href="{{ url_for('text_input') }}">Try another article.</a> </p>
-
-    
-    <img src="data:image/png;base64,{{img_data}}"/>
+    <p class="lead"><br>Your article is most similar in style to articles that have appeared in: <br> <b>{{the_result}}</b>
+      <br>Here's how your article stacks up against articles published in <b>{{the_target}}</b> across all features: <br>
+    <img src="data:image/png;base64,{{img_data_target}}"/><br>
+    <a href="{{ url_for('text_input') }}">Try another article.</a> <br>
+    Here's how your article stacks up against articles from other major publications across the 9 most informative features:
+    <img src="data:image/png;base64,{{img_data_total}}"/>
 
   </div>
 
