@@ -83,6 +83,21 @@ for fname in f_list:
     inst.calc_word_rarity()
     feature_df['word_rarity'] = inst.word_rarity
 
+
+
+    #convert_pos = {'JJR': 'JJ', 'JJS': 'JJ', 'NNS': 'NN',
+    #               'NNP': 'NN', 'NNPS': 'NN', 'RBR': 'RB',
+    #               'RBS': 'RB', 'VBD': 'VB', 'VBG': 'VB',
+    #               'VBN': 'VB', 'VBP': 'VB', 'VBZ': 'VB',
+    #               '.': 'PP', ',': 'PP', "'": 'PP',
+    #               '"': 'PP', ':':'PP', "''": 'PP', '(': 'PP', ')': 'PP', '``': 'PP'}
+    #pos_string = []
+    #for article_pos in pos:
+    #    pos_string.append(' '.join([convert_pos[i[1]] if i[1] in convert_pos else i[1] for i in article_pos]))
+    #feature_df['pos_string'] = pos_string
+    #exit(0)
+               
+
     
 
     #inst.calc_n_grams()

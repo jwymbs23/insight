@@ -45,23 +45,25 @@ for fname in f_list:
     pub_abbrev = fname[:-20]
     print(pub_abbrev)
     pub, article_id, auth, sent, word, string_count, pos = pickle.load(open(fname, 'rb'))
+
     
     inst = Publication(pub, sent, word, string_count, pos)
     inst.calc_word_count()
     inst.calc_sent_count()
     inst.calc_sent_len()
-    inst.calc_hook_first_five()
-    inst.calc_hook_frac()
+    #inst.calc_hook_first_five()
+    #inst.calc_hook_frac()
     inst.calc_unique_words()
     inst.calc_word_length()
     inst.calc_sent_len_std()
     inst.calc_flesch_level()
     inst.calc_pos_counts()
     inst.calc_punc_ps()
+    
 
     
     #print(inst.adverb_count[0])
-
+    
     feature_df = pd.DataFrame(
         {'label': [pub for i in range(len(inst.word_count))],
          'word_count': inst.word_count,
