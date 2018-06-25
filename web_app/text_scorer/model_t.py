@@ -1,4 +1,4 @@
-from sklearn.externals import joblib
+
 from collections import Counter
 import nltk.data
 sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
@@ -6,7 +6,7 @@ import string
 import numpy as np
 import pickle
 import matplotlib.pyplot as plt
-
+from sklearn.externals import joblib
 from text_scorer.pub_class import *
 
 from operator import itemgetter
@@ -17,15 +17,17 @@ pub_dict = {0: 'The Atlantic',1:'Breitbart', 2:'Buzzfeed News', 3:'Fox News', 4:
             7:'Vox', 8:'The Washington Post'}
 
 
-def model_t(fromUser  = 'Default', text = []):
-    clf = joblib.load('./text_scorer/pickles/xg_clf_6_21.pkl')
+def model_t(fromUser  = 'Default', text = [], model = joblib.load('./text_scorer/pickles/xg_clf_6_21.pkl')):
+    #clf = joblib.load('./text_scorer/pickles/xg_clf_6_21.pkl')
     text_features = generate_features(text)
-    print(text_features)
-    destination = clf.predict([text_features])
-
-    result = pub_dict[destination[0]]
+    #print(text_features)
+    destination = model.predict_proba([text_features])
+    print(destination[0].argsort()[-3:][::-1])
+    top_three_id = destination[0].argsort()[-3:][::-1]
+    top_three = [(pub_dict[i], destination[0][i]) for i in top_three_id]#result = pub_dict[destination[0]]
     #if fromUser != 'Default':
-    return result, text_features
+    #result = top_three[0][0]
+    return top_three, text_features
     #else:
     #    return 'check your input'
 

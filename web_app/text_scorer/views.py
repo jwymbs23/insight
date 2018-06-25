@@ -13,34 +13,51 @@ from text_scorer.model_t import plot_target_comp
 from text_scorer.pub_class import *
 import pickle
 import base64
-
-
+from sklearn.externals import joblib
+import random
+import urllib.parse
+import datetime
+from io import BytesIO
+import matplotlib.pyplot as plt
+    
 id_to_pub = {0: 'The Atlantic',1:'Breitbart', 2:'Buzzfeed News', 3:'Fox News', 4:'The Guardian', 5:'National Review', 6:'The New York Times',
             7:'Vox', 8:'The Washington Post'}
 
 pub_to_id = {'The Atlantic': 0,'Breitbart': 1, 'Buzzfeed News': 2, 'Fox News': 3, 'The Guardian': 4, 'National Review': 5, 'The New York Times': 6, 'Vox': 7, 'The Washington Post': 8}
 #['atl', 'breit', 'buzz', 'fox', 'guard', 'natrev', 'nyt', 'vox', 'wapo']
 
+
+
+@app.route('/')
+def home_page():
+    return render_template("home.html")
+
+@app.route('/slides')
+def slides():
+    return render_template("slides.html")
+
+
 @app.route('/input')
 def text_input():
+
     pub_names = sorted(list(id_to_pub.values()))
     return render_template("input.html", publications = pub_names)
 
 
 @app.route('/output')
 def text_output():
+    clf = joblib.load('./text_scorer/pickles/xg_clf_6_21.pkl')
     #pull 'birth_month' from input field and store it
     target_pub = request.args.get('publications')
     print('target_pub:', target_pub)
     text = request.args.get('text')
     #print(text)
-    destination_paper, text_features = model_t(text = text)
-    import urllib.parse
-    import datetime
-    from io import BytesIO
-    import random
+    top_three_destinations, text_features = model_t(text = text, model = clf)
+    top_destination = top_three_destinations[0][0]
+    top_three = [{'name': i[0], 'score': '%d'%(int(i[1]*100))} for i in top_three_destinations]
 
-    import matplotlib.pyplot as plt
+    
+
     mean_features = pickle.load(open('./text_scorer/pickles/mean_features.p', 'rb'))
     print(mean_features)
     mean_features_comp = compare_to_mean(text_features, mean_features)
@@ -49,6 +66,7 @@ def text_output():
 
     
     #for i in pub_dict:
+    #generate plot to compare input article to articles from the target publication across all features
     plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub)
 
 
@@ -62,9 +80,8 @@ def text_output():
 
     
 
-    
+    #generate plot to compare input article to articles from all publications across top features
     plot_feature_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub)
-                                
     #from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
     #from matplotlib.figure import Figure
     #from matplotlib.dates import DateFormatter
@@ -84,4 +101,4 @@ def text_output():
     figdata_png = base64.b64encode(figdata_png)
 
     
-    return render_template("output.html", the_result = destination_paper, the_target =  target_pub, img_data_target = urllib.parse.quote(figdata_png_target), img_data_total=urllib.parse.quote(figdata_png))#urllib.parse.quote(canvas))#urllib.parse.quote(png_output))
+    return render_template("output.html", top_three = top_three, the_target =  target_pub, img_data_target = urllib.parse.quote(figdata_png_target), img_data_total=urllib.parse.quote(figdata_png))#urllib.parse.quote(canvas))#urllib.parse.quote(png_output))

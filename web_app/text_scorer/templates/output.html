@@ -54,7 +54,12 @@
 <div class="container">
 
   <div class="starter-template">
-    <p class="lead"><br>Your article is most similar in style to articles that have appeared in: <br> <b>{{the_result}}</b>
+    <p class="lead"><br>Your article is most similar to articles found in the following publication: <br>
+      {% for item in top_three %}
+        <b>{{item['name']}}</b> with {{item['score']}}% confidence.<br>
+      {% endfor %}
+      
+      <!-- <b>{{the_result}}</b> -->
       <br>Here's how your article stacks up against articles published in <b>{{the_target}}</b> across all features: <br>
     <img src="data:image/png;base64,{{img_data_target}}"/><br>
     <a href="{{ url_for('text_input') }}">Try another article.</a> <br>
