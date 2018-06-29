@@ -66,6 +66,7 @@ for fname in f_list:
     
     feature_df = pd.DataFrame(
         {'label': [pub for i in range(len(inst.word_count))],
+         'id': [i for i in article_id],
          'word_count': inst.word_count,
          'sent_len': inst.sent_len,
          'word_len': inst.word_len,

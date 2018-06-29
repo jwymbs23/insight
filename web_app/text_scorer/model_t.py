@@ -17,7 +17,7 @@ pub_dict = {0: 'The Atlantic',1:'Breitbart', 2:'Buzzfeed News', 3:'Fox News', 4:
             7:'Vox', 8:'The Washington Post'}
 
 
-def model_t(fromUser  = 'Default', text = [], model = joblib.load('./text_scorer/pickles/xg_clf_6_21.pkl')):
+def model_t(fromUser  = 'Default', text = [], model = joblib.load('./text_scorer/pickles/stats_xgb_6_27.pkl')):
     #clf = joblib.load('./text_scorer/pickles/xg_clf_6_21.pkl')
     text_features = generate_features(text)
     #print(text_features)
@@ -37,11 +37,11 @@ def pre_process_text(text):
     print(text)
     lower_case = text.lower()
     #replace strange quote characters with normal ones
-    replace_quotes = text.replace('“', '"').replace('”', '"')
+    replace_quotes = lower_case.replace('“', '"').replace('”', '"')
     #do punkt sentence tokenization
-    sentence_tokenize = sent_detector.tokenize(text.strip())
+    sentence_tokenize = sent_detector.tokenize(lower_case.strip())
     #do nltk word tokenization
-    word_tokenize = nltk.word_tokenize(text)
+    word_tokenize = nltk.word_tokenize(lower_case)
     #get unique string counts
     string_counts = Counter(word_tokenize)
     pos_tag = nltk.pos_tag(word_tokenize)# for text in word_tokenize]
@@ -132,7 +132,7 @@ def generate_features(text):
     JJS_ps = inst.adj_count[0]['JJS']/inst.sent_count[0]
     JJR_ps = inst.adj_count[0]['JJR']/inst.sent_count[0]
     
-    return [word_count, sent_len, word_len, sent_len_std, unique_word_frac,cps, qps, exps, foreign, flesch, 
+    return [sent_len, word_len, sent_len_std, unique_word_frac,cps, qps, exps, foreign, flesch, 
             RB_ps, RBR_ps, RBS_ps, WRB_ps, VB_ps, VBD_ps, VBG_ps, VBN_ps, VBP_ps, VBZ_ps, JJ_ps, JJS_ps, JJR_ps,
             said_ps, and_ps, but_ps, told_ps, i_ps, pronoun_ps, determiner_ps, preposition_ps, word_rarity]
 
@@ -158,19 +158,65 @@ def compare_to_mean(text_features, mean_features):
 
 
 
-def plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub):
-    features = ['word_count', 'sent_len', 'word_len', 'sent_len_std', 'unique_word_frac',
+def plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub, categories):
+    features = ['sent_len', 'word_len', 'sent_len_std', 'unique_word_frac',
                 'cps', 'qps', 'exps', 'foreign', 'flesch',
                 'RB_ps', 'RBR_ps', 'RBS_ps', 'WRB_ps', 'VB_ps',
                 'VBD_ps', 'VBG_ps', 'VBN_ps', 'VBP_ps', 'VBZ_ps', 'JJ_ps', 'JJS_ps', 'JJR_ps',
-                'said_ps', 'and_ps', 'but_ps', 'told_ps', 'i_ps', 'pronoun_ps', 'determiner_ps', 'preposition_ps', 'word_rarity']
+                'said_ps', 'and_ps', 'but_ps', 'told_ps', 'i_ps', 'pronoun_ps', 'determiner_ps',
+                'preposition_ps', 'word_rarity']
+        
 
-    human_readable_features = ['Word count', 'Sentence length', 'Word length', 'Sentence length variation', 'Unique word fraction',
+    human_readable_features = ['Sentence length', 'Word length', 'Sentence length variation', 'Unique word fraction',
                                'Commas /s', 'Questions /s', 'Exclamations /s', 'Foreign words',
-                               'Flesch readability score', 'Adverbs /s', 'Comparative adverbs /s', 'Superlative adverbs /s',
-                               'Wh-adverbs /s', 'Verbs /s', 'Past tense verbs /s', 'Gerunds /s', 'Past participles /s',
-                               'Singular present (not 3rd person) /s', 'Singular present (3rd person) /s', 'Adjectives /s',
-                               'Superlative Adjectives /s', 'Comparative Adjectives /s', 'Said /s', 'and /s', 'but /s', 'told /s',
+                               'Flesch readability score', 'Adverbs /s', 'Comp. adverbs /s', 'Sup. adverbs /s',
+                               'Wh-adverbs /s', 'Verbs /s', 'Past verbs /s', 'Gerunds /s', 'Past part. /s',
+                               'Sing. present (not 3rd person) /s', 'Sing. present (3rd person) /s', 'Adjectives /s',
+                               'Sup. adjectives /s', 'Comp. adjectives /s', 'Said /s', 'and /s', 'but /s', 'told /s',
+                               'I /s', 'Pronouns /s', 'Determiners /s', 'Prepositions /s', 'Word rarity']
+    
+    
+    comp_to_mean = compare_to_mean(text_features, mean_features)
+    
+    
+    comp_to_target = {}
+    for ci, i in enumerate(human_readable_features):
+        comp_to_target[i] = comp_to_mean[pub_to_id[target_pub]][ci]
+        
+        
+    fig,ax = plt.subplots(2,2)
+    colors = ['#FDB927', '#006BB6', '#DA020E', '#00471B']
+    for ci, category in enumerate(categories):
+        #print(categories[category])
+        #print(comp_to_target.items())
+        sorted_comp_to_target = sorted( ((v,k) for k,v in comp_to_target.items() if features[human_readable_features.index(k)] in categories[category]), reverse=True)
+        #print(sorted_comp_to_target)
+        #print([i[0] for i in sorted_comp_to_target])
+        ax[int(ci/2)%2, ci%2].set_title(category, fontsize=14)
+        ax[int(ci/2)%2, ci%2].barh(range(len(categories[category])), [i[0] for i in sorted_comp_to_target if i[1] != 'Word count'], align='center',  color=colors[ci])
+        ax[int(ci/2)%2, ci%2].barh(range(len(categories[category])), [1 for i in range(len(sorted_comp_to_target))], align='center',
+                                   color='k', alpha = 0.5)
+        ax[int(ci/2)%2, ci%2].set_yticks(range(len(categories[category])))
+        ax[int(ci/2)%2, ci%2].set_yticklabels([i[1] for i in sorted_comp_to_target if i[1] != 'Word count'], fontsize=10)
+        fig.subplots_adjust(left = 0.4) #
+        ax[int(ci/2)%2, ci%2].invert_yaxis()  # labels read top-to-bottom
+    fig.subplots_adjust(wspace = 1.5, hspace = 0.5) #
+    fig.set_size_inches(10,5)
+    fig.tight_layout()
+    plt.savefig('./text_scorer/comp.png', bbox_inches = 'tight')
+            
+
+
+
+
+
+"""
+    human_readable_features = ['Sentence length', 'Word length', 'Sentence length variation', 'Unique word fraction',
+                               'Commas /s', 'Questions /s', 'Exclamations /s', 'Foreign words',
+                               'Flesch readability score', 'Adverbs /s', 'Comp. adverbs /s', 'Sup. adverbs /s',
+                               'Wh-adverbs /s', 'Verbs /s', 'Past verbs /s', 'Gerunds /s', 'Past part. /s',
+                               'Sing. present (not 3rd person) /s', 'Sing. present (3rd person) /s', 'Adjectives /s',
+                               'Sup. Adjectives /s', 'Comp. Adjectives /s', 'Said /s', 'and /s', 'but /s', 'told /s',
                                'I /s', 'Pronouns /s', 'Determiners /s', 'Prepositions /s', 'Word Rarity']
 
     
@@ -182,9 +228,9 @@ def plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_
     fig,ax = plt.subplots()
     sorted_comp_to_target = sorted( ((v,k) for k,v in comp_to_target.items()), reverse=True)
 
-    ax.barh([i for i in range(0,len(features)-1)], [i[0] for i in sorted_comp_to_target if i[1] != 'Word count'], align='center',
+    ax.barh([i for i in range(0,len(features))], [i[0] for i in sorted_comp_to_target if i[1] != 'Word count'], align='center',
                     color='r')
-    ax.barh([i for i in range(0,len(features)-1)], [1 for i in range(len(sorted_comp_to_target)-1)], align='center',
+    ax.barh([i for i in range(0,len(features))], [1 for i in range(len(sorted_comp_to_target))], align='center',
                     color='k', alpha = 0.5)
     ax.set_yticks(range(len(features)))
     ax.set_yticklabels([i[1] for i in sorted_comp_to_target if i[1] != 'Word count'])
@@ -192,17 +238,17 @@ def plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_
     ax.invert_yaxis()  # labels read top-to-bottom
     fig.set_size_inches(5,6)
     plt.savefig('./text_scorer/comp.png', bbox_inches = 'tight')
-
+"""
 
 
 
 def plot_feature_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub):
-    features = ['word_count', 'sent_len', 'word_len', 'sent_len_std', 'unique_word_frac',
+    features = [ 'sent_len', 'word_len', 'sent_len_std', 'unique_word_frac',
                 'cps', 'qps', 'exps', 'foreign', 'flesch',
                 'RB_ps', 'RBR_ps', 'RBS_ps', 'WRB_ps', 'VB_ps',
                 'VBD_ps', 'VBG_ps', 'VBN_ps', 'VBP_ps', 'VBZ_ps', 'JJ_ps', 'JJS_ps', 'JJR_ps',
                 'said_ps', 'and_ps', 'but_ps', 'told_ps', 'i_ps', 'pronoun_ps', 'determiner_ps', 'preposition_ps', 'word_rarity']
-    human_readable_features = ['Word count', 'Sentence length', 'Word length', 'Sentence length variation', 'Unique word fraction',
+    human_readable_features = ['Sentence length', 'Word length', 'Sentence length variation', 'Unique word fraction',
                                'Commas /s', 'Questions /s', 'Exclamations /s', 'Foreign words',
                                'Flesch readability', 'Adverbs /s', 'Comparative adverbs /s', 'Superlative adverbs /s',
                                'Wh-adverbs /s', 'Verbs /s', 'Past tense verbs /s', 'Gerunds /s', 'Past participles /s',
@@ -214,23 +260,22 @@ def plot_feature_comp(id_to_pub, pub_to_id, text_features, mean_features, target
     comp_to_mean = compare_to_mean(text_features, mean_features)
 
     fig, axs = plt.subplots(3, 3)
-    ranked_most_important_features = ['Unique word fraction', 'Said /s', 'Word length',
-                                      'Commas /s', 'Word rarity', 'Sentence length variation',
-                                      'Flesch readability','Past tense verbs', 'Sentence length']
-    ranked_indices = [4, 23,  2,  5, 31,  3,  9, 15,  1]
-    colors = 'rgbcmyrgbcmyk'
+    ranked_most_important_features = ['Flesch readability', 'Unique word fraction', 'Said /s', 'Word length',
+                                      'Commas /s', 'Foreign words']
+    ranked_indices = [human_readable_features.index(i) for i in ranked_most_important_features]
+    colors = ['#007DC3', '#F05133', '#241773', '#FDBB30', '#00843d', '#CC3433', '#4F8A10', '#8CCCE5', '#FB4F14']#'rgbcmyrgbcmyk'
     print(id_to_pub)
     for i in id_to_pub:
         print(i)
         print(comp_to_mean[i])
-        axs[int(i/3)%3, i%3].bar(list(range(9)), [comp_to_mean[i][j] for j in ranked_indices], color = colors[i])
-        axs[int(i/3)%3, i%3].bar(list(range(9)), [1 for _ in range(9)], color = 'black', alpha = 0.5)
+        axs[int(i/3)%3, i%3].bar(list(range(len(ranked_most_important_features))), [comp_to_mean[i][j] for j in ranked_indices], color = colors[i])
+        axs[int(i/3)%3, i%3].bar(list(range(len(ranked_most_important_features))), [1 for _ in range(len(ranked_most_important_features))], color = 'black', alpha = 0.5)
         axs[int(i/3)%3, i%3].set_title('{}'.format(pub_dict[i]))
-        axs[int(i/3)%3, i%3].set_xticks(range(9))
+        axs[int(i/3)%3, i%3].set_xticks(range(len(ranked_most_important_features)))
         axs[int(i/3)%3, i%3].set_xticklabels(ranked_most_important_features, rotation = 45, ha = 'right')
     fig.subplots_adjust(bottom = 0.3, left = 0.2, wspace = 0.3, hspace = 0.8) #
-    fig.set_size_inches(11, 16)
-    
+    fig.set_size_inches(10, 10)
+    fig.tight_layout()    
     #print(mean_features_comp[pub_id], pub_id)
     #plt.bar(list(range(5)), mean_features_comp, color = 'r')
     #plt.bar(list(range(5)), [1 for _ in range(5)], color = 'black', alpha = 0.5)

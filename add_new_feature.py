@@ -80,10 +80,10 @@ for fname in f_list:
 
 
 
-    inst.calc_word_rarity()
-    feature_df['word_rarity'] = inst.word_rarity
+    #inst.calc_word_rarity()
+    #feature_df['word_rarity'] = inst.word_rarity
 
-
+    feature_df['article_id'] = [i for i in article_id]
 
     #convert_pos = {'JJR': 'JJ', 'JJS': 'JJ', 'NNS': 'NN',
     #               'NNP': 'NN', 'NNPS': 'NN', 'RBR': 'RB',

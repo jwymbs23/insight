@@ -28,25 +28,27 @@ pub_to_id = {'The Atlantic': 0,'Breitbart': 1, 'Buzzfeed News': 2, 'Fox News': 3
 
 
 
-@app.route('/')
-def home_page():
-    return render_template("home.html")
+#@app.route('/')
+#def home_page():
+#    return render_template("home.html")
 
 @app.route('/slides')
 def slides():
     return render_template("slides.html")
 
+@app.route('/about')
+def about():
+    return render_template("about.html")
 
-@app.route('/input')
-def text_input():
-
+@app.route('/')
+def home_page():
     pub_names = sorted(list(id_to_pub.values()))
-    return render_template("input.html", publications = pub_names)
+    return render_template("home.html", publications = pub_names)
 
 
 @app.route('/output')
 def text_output():
-    clf = joblib.load('./text_scorer/pickles/xg_clf_6_21.pkl')
+    clf = joblib.load('./text_scorer/pickles/stats_xgb_6_27.pkl')
     #pull 'birth_month' from input field and store it
     target_pub = request.args.get('publications')
     print('target_pub:', target_pub)
@@ -61,13 +63,36 @@ def text_output():
     mean_features = pickle.load(open('./text_scorer/pickles/mean_features.p', 'rb'))
     print(mean_features)
     mean_features_comp = compare_to_mean(text_features, mean_features)
-    print(mean_features_comp)
+    #print(mean_features_comp)
 
+    features = ['sent_len', 'word_len', 'sent_len_std', 'unique_word_frac',
+                'cps', 'qps', 'exps', 'foreign', 'flesch',
+                'RB_ps', 'RBR_ps', 'RBS_ps', 'WRB_ps', 'VB_ps',
+                'VBD_ps', 'VBG_ps', 'VBN_ps', 'VBP_ps', 'VBZ_ps', 'JJ_ps', 'JJS_ps', 'JJR_ps',
+                'said_ps', 'and_ps', 'but_ps', 'told_ps', 'i_ps', 'pronoun_ps', 'determiner_ps',
+                'preposition_ps', 'word_rarity']
+    
+    
+    human_readable_features = ['Sentence length', 'Word length', 'Sentence length variation', 'Unique word fraction',
+                               'Commas /s', 'Questions /s', 'Exclamations /s', 'Foreign words',
+                               'Flesch readability score', 'Adverbs /s', 'Comp. adverbs /s', 'Sup. adverbs /s',
+                               'Wh-adverbs /s', 'Verbs /s', 'Past verbs /s', 'Gerunds /s', 'Past part. /s',
+                               'Sing. present (not 3rd person) /s', 'Sing. present (3rd person) /s', 'Adjectives /s',
+                               'Sup. adjectives /s', 'Comp. adjectives /s', 'Said /s', 'and /s', 'but /s', 'told /s',
+                               'I /s', 'Pronouns /s', 'Determiners /s', 'Prepositions /s', 'Word rarity']
+    
 
+    categories = {'Word Use': ['word_len', 'unique_word_frac', 'flesch', 'word_rarity', 'foreign','said_ps', 'told_ps'],
+                  'Phrase Complexity': ['sent_len', 'sent_len_std' , 'cps', 'WRB_ps','and_ps', 'but_ps', 'VB_ps'],
+                  'Parts of Speech': ['VBD_ps', 'VBG_ps', 'VBN_ps', 'VBP_ps', 'VBZ_ps', 'pronoun_ps', 'determiner_ps', 'preposition_ps'],
+                  'Tone': ['qps', 'exps', 'RB_ps', 'RBS_ps', 'RBR_ps', 'JJ_ps', 'JJS_ps', 'JJR_ps' ,'i_ps']}
+    
+
+    
     
     #for i in pub_dict:
     #generate plot to compare input article to articles from the target publication across all features
-    plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub)
+    plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub, categories)
 
 
     figfile_target = BytesIO()
