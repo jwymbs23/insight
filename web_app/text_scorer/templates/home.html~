@@ -10,15 +10,19 @@
     <link rel="icon" href="../../favicon.ico">
 
     <title>Fit to print</title>
-
+    <center>
+      <h1> Fit to Print</h1>
+      <a href="{{ url_for('home_page') }}">Home</a>   -   <a href="{{ url_for('slides') }}">Slides</a>   -   <a href="{{ url_for('about') }}">About</a>
+      
+    </center>
     <!-- Bootstrap core CSS -->
-    <link href="../static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="../static/css/bootstrap.min.css" rel="stylesheet"> 
 
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
-    <link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet">
+    <!-- <link href="../../assets/css/ie10-viewport-bug-workaround.css" rel="stylesheet"> -->
 
     <!-- Custom styles for this template -->
-    <link href="../static/css/starter-template.css" rel="stylesheet">
+    <link href="../static/css/home.css" rel="stylesheet">
 
     <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
     <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
@@ -31,7 +35,7 @@
       <![endif]-->
   </head>
   <body>
-    <hr size="30"> 
+     <hr size="200"> 
 <!--
     <nav class="navbar navbar-inverse navbar-fixed-top">
       <div class="container">
@@ -54,37 +58,42 @@
       </div>
     </nav>
     <br><br> -->
-    <div class="container">
-      <div class="starter-template">
-	<h2>Fit to print</h2>
-	<p>Enter your article text</p>
-      </div>
-      <div class = "container">
 	<center>
-	<form action="/output" method="POST" novalidate>
-	  <div class="form-group">
-	    <!--<label for="text">Enter Text:</label>-->
-	    <!--<input type="text" id="text" name='text' placeholder="e.g. "> -->
-	    <textarea type="text" id="text" name='text' style="font-size:12pt;height:250px;width:700px;"></textarea> 
-	  </div>
-	  Where do you want to submit your article?  <select name = publications method="GET" action="/output">
-	    {% for pub_name in publications %}
-	    <option value= "{{pub_name}}" SELECTED>{{pub_name}}</option>"
-	    {% endfor %}
-	  </select>
-
-
-	  
-	  <div>
-	    <button type="submit" class="btn btn-default btn-lg">Submit</button>
-	  </div>
-	</form>
+	  <div class="container">
+	    <div class="starter-template">
+	      <div class="row">
+		<div class="column" style="width:40%;">
+		  <h3>What is Fit to Print?</h3>
+		  <p>This project was completed in three weeks as a part of the Insight Data Science program.</p>
+		  <p>Fit to print is a tool that helps you match the writing style of your article to the editorial voice of a desired publication.</p>
+		  <p>It has learned the stylistic markers of articles from 9 major publications with a variety of approaches to reporting news and compares your article to others that appeared in these publications.</p>
+		  <p><br> For more information, <a href="{{ url_for('slides') }}">see the slides.</a></p>
+		</div>
+		<div class="column" style="width:60%;padding-left:70px;">
+		  <form action="/output" method="GET">
+		    <div class="form-group">
+		      <!--<label for="text">Enter Text:</label>-->
+		      <!--<input type="text" id="text" name='text' placeholder="e.g. "> -->
+		      <textarea type="text" id="text" name='text' style="font-size:12pt;height:250px;width:600px;"></textarea>
+		    </div>
+		    Where do you want to submit your article?  <select name = publications method="GET" action="/output">
+		      {% for pub_name in publications %}
+		      <option value= "{{pub_name}}" SELECTED>{{pub_name}}</option>"
+		      {% endfor %}
+		    </select>
+		    
+		    
+		    
+		    <div>
+		      <button type="submit" class="btn btn-default btn-lg">Submit</button>
+		    </div>
+		  </form>
+	      </div>
+	      </div>
 	</center>
-      </div>
-
-      <script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
-
-      <script src="static/js/bootstrap.min.js"></script>
+	<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+	
+	<script src="static/js/bootstrap.min.js"></script>
 
 
        </div> <!-- /.container-->

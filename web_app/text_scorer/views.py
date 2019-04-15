@@ -5,7 +5,8 @@ from text_scorer import app
 #from sqlalchemy_utils import database_exists, create_database
 import pandas as pd
 #import psycopg2
-from flask import request
+#from flask import request
+import flask
 from text_scorer.model_t import model_t
 from text_scorer.model_t import compare_to_mean
 from text_scorer.model_t import plot_feature_comp
@@ -40,21 +41,28 @@ def slides():
 def about():
     return render_template("about.html")
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def home_page():
     pub_names = sorted(list(id_to_pub.values()))
     return render_template("home.html", publications = pub_names)
 
 
-@app.route('/output')
+@app.route('/example', methods=['GET', 'POST'])
+def example_page():
+    pub_names = sorted(list(id_to_pub.values()))
+    return render_template("example.html", publications = pub_names)
+
+
+
+@app.route('/output', methods = ['GET', 'POST'])
 def text_output():
     clf = joblib.load('./text_scorer/pickles/stats_xgb_6_27.pkl')
     #pull 'birth_month' from input field and store it
-    target_pub = request.args.get('publications')
+    target_pub = flask.request.values.get('publications')#request.args.get('publications')
     print('target_pub:', target_pub)
-    text = request.args.get('text')
+    text = flask.request.values.get('text')#request.args.get('text')
     #print(text)
-    top_three_destinations, text_features = model_t(text = text, model = clf)
+    top_three_destinations, text_features = model_t(text = text, model = clf, id_to_pub)
     top_destination = top_three_destinations[0][0]
     top_three = [{'name': i[0], 'score': '%d'%(int(i[1]*100))} for i in top_three_destinations]
 

@@ -1,4 +1,3 @@
-
 from collections import Counter
 import nltk.data
 sent_detector = nltk.data.load('tokenizers/punkt/english.pickle')
@@ -10,29 +9,30 @@ from sklearn.externals import joblib
 from text_scorer.pub_class import *
 
 from operator import itemgetter
-#from pub_class import *
-
-#pub_dict = {0: 'New York Times',1:'Breitbart', 2:'Washington Post'}
-pub_dict = {0: 'The Atlantic',1:'Breitbart', 2:'Buzzfeed News', 3:'Fox News', 4:'The Guardian', 5:'National Review', 6:'The New York Times',
-            7:'Vox', 8:'The Washington Post'}
 
 
-def model_t(fromUser  = 'Default', text = [], model = joblib.load('./text_scorer/pickles/stats_xgb_6_27.pkl')):
-    #clf = joblib.load('./text_scorer/pickles/xg_clf_6_21.pkl')
+
+def model_t(fromUser  = 'Default', text = [], model = joblib.load('./text_scorer/pickles/stats_xgb_6_27.pkl'), id_to_pub):
+    """ 
+    Takes text input, generates feature array, predicts destinations
+    """
     text_features = generate_features(text)
     #print(text_features)
     destination = model.predict_proba([text_features])
-    print(destination[0].argsort()[-3:][::-1])
+    #print(destination[0].argsort()[-3:][::-1])
     top_three_id = destination[0].argsort()[-3:][::-1]
-    top_three = [(pub_dict[i], destination[0][i]) for i in top_three_id]#result = pub_dict[destination[0]]
-    #if fromUser != 'Default':
-    #result = top_three[0][0]
+    top_three = [(id_to_pub[i], destination[0][i]) for i in top_three_id]
     return top_three, text_features
-    #else:
-    #    return 'check your input'
+
 
 
 def pre_process_text(text):
+    """
+    Input: 
+    Output: 
+    
+    Pre-process text
+    """
     #lower case text
     print(text)
     lower_case = text.lower()
@@ -52,6 +52,9 @@ def pre_process_text(text):
 
 
 def generate_features(text):
+    """
+    Generate features from preprocessed text
+    """
     sent_tok, word_tok, string_count, pos = pre_process_text(text)
     punctuation_set = set(string.punctuation)
 
@@ -68,13 +71,14 @@ def generate_features(text):
     inst.calc_pos_counts()
     inst.calc_punc_ps()
 
-#['word_count', 'sent_len', 'word_len', 'sent_len_std', 'unique_word_frac',
-#'cps', 'qps', 'exps', 'foreign', 'flesch', 
-#'RB_ps', 'RBR_ps', 'RBS_ps', 'WRB_ps', 'VB_ps',
-#'VBD_ps', 'VBG_ps', 'VBN_ps', 'VBP_ps', 'VBZ_ps', 'JJ_ps', 'JJS_ps', 'JJR_ps',
-#'said_ps', 'and_ps', 'but_ps', 'told_ps', 'i_ps', 'pronoun_ps', 'determiner_ps', 'preposition_ps', 'word_rarity']
+    #feature list
+    #['word_count', 'sent_len', 'word_len', 'sent_len_std', 'unique_word_frac',
+    #'cps', 'qps', 'exps', 'foreign', 'flesch', 
+    #'RB_ps', 'RBR_ps', 'RBS_ps', 'WRB_ps', 'VB_ps',
+    #'VBD_ps', 'VBG_ps', 'VBN_ps', 'VBP_ps', 'VBZ_ps', 'JJ_ps', 'JJS_ps', 'JJR_ps',
+    #'said_ps', 'and_ps', 'but_ps', 'told_ps', 'i_ps', 'pronoun_ps', 'determiner_ps', 'preposition_ps', 'word_rarity']
 
-    
+    #do feature processing
     word_count = inst.word_count[0]
     sent_len = inst.sent_len[0]
     word_len = inst.word_len[0]
@@ -89,7 +93,7 @@ def generate_features(text):
     adjectives = inst.adj_count[0]
 
     foreign = inst.FW_count[0]
-    print('-------------', foreign)
+    #print('-------------', foreign)
     
     flesch = inst.flesch_level[0]
     said_ps = inst.said_ps[0]
@@ -114,6 +118,7 @@ def generate_features(text):
     #flesch_five = inst.first_five
     #flesch_sec = inst.flesch_frac
 
+    #get per sentence counts
     RB_ps  = inst.adverb_count[0]['RB']/inst.sent_count[0]#.apply(lambda row: row['RB'])/feature_df['inst.sent_count']
     RBR_ps = inst.adverb_count[0]['RBR']/inst.sent_count[0]
     RBS_ps = inst.adverb_count[0]['RBS']/inst.sent_count[0]
@@ -135,30 +140,24 @@ def generate_features(text):
     return [sent_len, word_len, sent_len_std, unique_word_frac,cps, qps, exps, foreign, flesch, 
             RB_ps, RBR_ps, RBS_ps, WRB_ps, VB_ps, VBD_ps, VBG_ps, VBN_ps, VBP_ps, VBZ_ps, JJ_ps, JJS_ps, JJR_ps,
             said_ps, and_ps, but_ps, told_ps, i_ps, pronoun_ps, determiner_ps, preposition_ps, word_rarity]
+#THIS ORDER MATTERS!!!!!!!!!! build order independence or awareness into the workflow?
 
 
-
-    
-#    word_count = len([word for word in word_tok if word not in punctuation_set])
-#    sent_count = len(sent_tok)
-#    sent_len = float(word_count / sent_count)
-#    sent_std = np.std([len(sent) for sent in sent_tok])#
-
-#    unique_word_count = len(set([word for word in word_tok if word not in punctuation_set]))
-#    unique_word_frac = float(unique_word_count / word_count)
-#    mean_word_length = np.mean([len(word) for word in word_tok if word not in punctuation_set])
-
-#    cps = string_counts[',']/sent_count
-    #THIS ORDER MATTERS!!!!!!!!!! build order independence or awareness into the workflow?
-    #wc (optional), sent_len, sent_len_std, unique_word_frac, word_len, cps
-#    return [sent_len, sent_std, unique_word_frac, mean_word_length, cps]
     
 def compare_to_mean(text_features, mean_features):
+    """
+    Compare features from text to mean features across all publications
+    """
     return [[float(i/j) for i,j in zip(text_features, pub_features)] for pub_features in mean_features]
 
 
 
 def plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub, categories):
+    """
+    Plot comparison to target publication across all features
+    """
+
+    
     features = ['sent_len', 'word_len', 'sent_len_std', 'unique_word_frac',
                 'cps', 'qps', 'exps', 'foreign', 'flesch',
                 'RB_ps', 'RBR_ps', 'RBS_ps', 'WRB_ps', 'VB_ps',
@@ -175,15 +174,15 @@ def plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_
                                'Sup. adjectives /s', 'Comp. adjectives /s', 'Said /s', 'and /s', 'but /s', 'told /s',
                                'I /s', 'Pronouns /s', 'Determiners /s', 'Prepositions /s', 'Word rarity']
     
-    
+    #compare text features to mean features
     comp_to_mean = compare_to_mean(text_features, mean_features)
     
-    
+    #make feature dictionary
     comp_to_target = {}
     for ci, i in enumerate(human_readable_features):
         comp_to_target[i] = comp_to_mean[pub_to_id[target_pub]][ci]
         
-        
+    #make plot
     fig,ax = plt.subplots(2,2)
     colors = ['#FDB927', '#006BB6', '#DA020E', '#00471B']
     for ci, category in enumerate(categories):
@@ -207,42 +206,11 @@ def plot_target_comp(id_to_pub, pub_to_id, text_features, mean_features, target_
             
 
 
-
-
-
-"""
-    human_readable_features = ['Sentence length', 'Word length', 'Sentence length variation', 'Unique word fraction',
-                               'Commas /s', 'Questions /s', 'Exclamations /s', 'Foreign words',
-                               'Flesch readability score', 'Adverbs /s', 'Comp. adverbs /s', 'Sup. adverbs /s',
-                               'Wh-adverbs /s', 'Verbs /s', 'Past verbs /s', 'Gerunds /s', 'Past part. /s',
-                               'Sing. present (not 3rd person) /s', 'Sing. present (3rd person) /s', 'Adjectives /s',
-                               'Sup. Adjectives /s', 'Comp. Adjectives /s', 'Said /s', 'and /s', 'but /s', 'told /s',
-                               'I /s', 'Pronouns /s', 'Determiners /s', 'Prepositions /s', 'Word Rarity']
-
-    
-    comp_to_mean = compare_to_mean(text_features, mean_features)
-    comp_to_target = {}
-    for ci, i in enumerate(human_readable_features):
-        comp_to_target[i] = comp_to_mean[pub_to_id[target_pub]][ci]
-
-    fig,ax = plt.subplots()
-    sorted_comp_to_target = sorted( ((v,k) for k,v in comp_to_target.items()), reverse=True)
-
-    ax.barh([i for i in range(0,len(features))], [i[0] for i in sorted_comp_to_target if i[1] != 'Word count'], align='center',
-                    color='r')
-    ax.barh([i for i in range(0,len(features))], [1 for i in range(len(sorted_comp_to_target))], align='center',
-                    color='k', alpha = 0.5)
-    ax.set_yticks(range(len(features)))
-    ax.set_yticklabels([i[1] for i in sorted_comp_to_target if i[1] != 'Word count'])
-    fig.subplots_adjust(left = 0.4) #
-    ax.invert_yaxis()  # labels read top-to-bottom
-    fig.set_size_inches(5,6)
-    plt.savefig('./text_scorer/comp.png', bbox_inches = 'tight')
-"""
-
-
-
 def plot_feature_comp(id_to_pub, pub_to_id, text_features, mean_features, target_pub):
+    """
+    plot comparison to all publications across top features
+    """
+
     features = [ 'sent_len', 'word_len', 'sent_len_std', 'unique_word_frac',
                 'cps', 'qps', 'exps', 'foreign', 'flesch',
                 'RB_ps', 'RBR_ps', 'RBS_ps', 'WRB_ps', 'VB_ps',
@@ -260,11 +228,14 @@ def plot_feature_comp(id_to_pub, pub_to_id, text_features, mean_features, target
     comp_to_mean = compare_to_mean(text_features, mean_features)
 
     fig, axs = plt.subplots(3, 3)
+
+    
     ranked_most_important_features = ['Flesch readability', 'Unique word fraction', 'Said /s', 'Word length',
                                       'Commas /s', 'Foreign words']
     ranked_indices = [human_readable_features.index(i) for i in ranked_most_important_features]
+
     colors = ['#007DC3', '#F05133', '#241773', '#FDBB30', '#00843d', '#CC3433', '#4F8A10', '#8CCCE5', '#FB4F14']#'rgbcmyrgbcmyk'
-    print(id_to_pub)
+    #print(id_to_pub)
     for i in id_to_pub:
         print(i)
         print(comp_to_mean[i])
